@@ -108,7 +108,7 @@ class QLearningAgent(Player):
             self.qval[state, action] = 0.0
 
         self.qval[state, action] = self.qval[state, action] * (1 - self.alpha) + self.alpha * (
-                    reward + self.discount * sum)
+                reward + self.discount * sum)
         return self.qval[state, action]
 
     def getPolicy(self, state):

@@ -164,6 +164,9 @@ create_reset_ghost()
 
 target_grid = copy_arr(grid)
 
+scores = {}
+wins = 0
+
 
 def win_game(coins):
     row = len(coins)
@@ -184,29 +187,27 @@ def get_reward(eat, game, won_game):
     if eat:
         return 10
     else:
-        return -6
+        return -1
 
 
-def reset_game(scor, games, won_game):
+def reset_game(games):
     player.x = 1
     player.y = 1
     player.coin_grid = copy_arr(grid)
-    if won_game:
-        print("WIN at ", scor)
     create_reset_ghost()
     return 1, games + 1
 
 
+print("Training...")
+
 while done < 50:
-    print("Episode ", done)
     game_over = 0
     score = 0
     state = player.get_pos()
+    last_state = state
     win = 0
-
     while not game_over:
         eats = 0
-        oldstate = state
         action = player.getAction(state)
         new_state = player.take_action(action)
 
@@ -219,9 +220,10 @@ while done < 50:
             score += 10
             eats = 1
 
-        if win_game(player.coin_grid) == 0:
-            game_over = 1
-            win = 1
+        if not game_over:
+            if win_game(player.coin_grid) == 0:
+                game_over = 1
+                win = 1
 
         for ghost in player.ghosts:
             hasArrived = ghost.run(graph)
@@ -229,20 +231,26 @@ while done < 50:
                 ghost.head_to_node(pick_next_node(graph, ghost.heading, ghost.depart), graph)
                 hasArrived = ghost.run(graph)
 
-        for ghost in player.ghosts:
-            if ghost.x == player.x and ghost.y == player.y:
-                game_over = 1
+        if not game_over:
+            for ghost in player.ghosts:
+                if ghost.x == player.x and ghost.y == player.y:
+                    game_over = 1
 
         reward = get_reward(eats, game_over, win)
         player.update(state, action, new_state, reward)
         state = new_state
 
         if game_over:
-            game_over, done = reset_game(score, done, win)
+            game_over, done = reset_game(done)
 
+print("Training complete!")
+big_score = 0
+medium_score = 0
+low_score = 0
 done = 0
 while done < 200:
-    print("Episode ", done)
+    if done % 10 == 0:
+        print("Episode ", done)
     game_over = 0
     state = player.get_pos()
     player.alpha = 0
@@ -251,7 +259,7 @@ while done < 200:
     win = 0
     while not game_over:
         eats = 0
-
+        """
         textsurface = font.render(
             "Heading to x:{:2d} y:{:2d} id:{:2d}".format(ghosts[0].heading_x, ghosts[0].heading_y, ghosts[0].heading),
             False,
@@ -259,13 +267,12 @@ while done < 200:
         scoresurface = font.render(
             "Score: {:6d}".format(score), False,
             (255, 255, 255))
-
+        
         screen.fill(BLACK)
         screen.blit(sprites, (0, 0), (0, tile_size * 3, width, height))
         draw_map(screen, target_grid)
         draw_coins(player.coin_grid)
-
-        oldstate = state
+        """
         action = player.getAction(state)
         new_state = player.take_action(action)
 
@@ -278,39 +285,60 @@ while done < 200:
             score += 10
             eats = 1
 
-        if win_game(player.coin_grid) == 0:
-            game_over = 1
-            win = 1
+        if not game_over:
+            if win_game(player.coin_grid) == 0:
+                game_over = 1
+                win = 1
+                wins += 1
 
         for ghost in player.ghosts:
             hasArrived = ghost.run(graph)
             if hasArrived:
                 ghost.head_to_node(pick_next_node(graph, ghost.heading, ghost.depart), graph)
                 hasArrived = ghost.run(graph)
-
+        """
         for ghost in player.ghosts:
             ghost.draw()
 
         player.draw()
-
-        for ghost in player.ghosts:
-            if ghost.x == player.x and ghost.y == player.y:
-                game_over = 1
+        """
+        if not game_over:
+            for ghost in player.ghosts:
+                if ghost.x == player.x and ghost.y == player.y:
+                    game_over = 1
 
         reward = get_reward(eats, game_over, win)
-
-        # for f in player.featExtractor.getFeatures(oldstate, action, player.ghosts, player.coin_grid, player.grid):
-        #    print(f, player.featExtractor.getFeatures(oldstate, action, player.ghosts,
-        #                                              player.coin_grid, player.grid).get(f),
-        #          player.weights[f], reward)
-
-        player.update(oldstate, action, new_state, reward)
+        """
+        for f in player.featExtractor.getFeatures(state, action, player.ghosts, player.coin_grid, player.grid):
+            print(f, player.featExtractor.getFeatures(state, action, player.ghosts,
+                                                      player.coin_grid, player.grid).get(f),
+                  player.weights[f], reward)
+        """
+        player.update(state, action, new_state, reward)
         state = new_state
 
         if game_over:
-            game_over, done = reset_game(score, done, win)
+            game_over, done = reset_game(done)
+            scores[done] = score
+            if score >= 1500:
+                low_score += 1
+                if score >= 1750:
+                    medium_score += 1
+                    if score >= 2000:
+                        big_score += 1
 
+        """
         pygame.display.flip()
         screen.blit(textsurface, (width + 20, 20))
         screen.blit(scoresurface, (width + 20, 50))
         fpsClock.tick(10)
+        """
+print(" ")
+print("No. of wins: ", wins)
+print("Win rate: ", wins/done*100, "%")
+print("Games with score over 1500: ", low_score)
+print("Rate of achieving at least 1500 in a game: ", low_score/done*100, "%")
+print("Games with score over 1750: ", medium_score)
+print("Rate of achieving at least 1750 in a game: ", medium_score/done*100, "%")
+print("Games with score over 2000: ", big_score)
+print("Rate of achieving at least 2000 in a game: ", big_score/done*100, "%")

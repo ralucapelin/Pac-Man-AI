@@ -1,7 +1,8 @@
 
 import env.Consts as consts
 
-class IdentityExtractor():
+
+class IdentityExtractor:
     def getFeatures(self, state, action):
         feats = {}
         feats[(state, action)] = 1.0
@@ -106,9 +107,9 @@ def getLegalActions(state, grid):
     return actions
 
 
-class SimpleExtractor():
+class SimpleExtractor:
 
-    def getFeatures(self, state, action,ghosts, coin_grid,grid):
+    def getFeatures(self, state, action, ghosts, coin_grid, grid):
         # extract the grid of food and wall locations and get the ghost locations
         features = {}
 
@@ -130,10 +131,11 @@ class SimpleExtractor():
         distToGhost = closestGhost((next_x, next_y), ghosts, grid)
         if distToGhost:
             features["inv-closest-ghost"] = 1/(float(distToGhost))
-            features["closest-ghost"] = (float(distToGhost))/consts.tile_size
+            features["closest-ghost"] = (float(distToGhost))/(consts.tile_size*consts.tile_size)
+
 
         # if there is no danger of ghosts then add the food feature
-        if features["#-of-ghosts-1-step-away"] == 0 and coin_grid[next_y][next_x] == 1:
+        if features["#-of-ghosts-1-step-away"] == 0 and coin_grid[next_y][next_x] == 1 and distToGhost == 0:
             features["eats-food"] = 1.0
 
         dist = closestFood((next_x, next_y), coin_grid, grid)
@@ -141,7 +143,7 @@ class SimpleExtractor():
         if dist is not None:
             # make the distance a number less than one otherwise the update
             # will diverge wildly
-            features["closest-food"] = float(dist)/(consts.tile_size*consts.tile_size*consts.tile_size)
+            features["closest-food"] = float(dist)/(consts.tile_size*consts.tile_size*consts.tile_size*consts.tile_size*consts.tile_size*consts.tile_size)
         for f in features:
             features[f] = features[f]/10
         return features
