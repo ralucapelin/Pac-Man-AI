@@ -112,14 +112,10 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <!-- CONTACT -->
 ## Contact
-
-Vener Andrei - venerandrei331@gmail.com<br>
 Raluca-Maria Pelin - ralucapelin@gmail.com<br><br>
-Project Link: [https://github.com/VenerAndrei/Pac-Man-AI](https://github.com/VenerAndrei/Pac-Man-AI)
+Vener Andrei - venerandrei331@gmail.com<br>
 
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
+Project Link: [https://github.com/ralucapelin/Pac-Man-AI](https://github.com/ralucapelin/Pac-Man-AI)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
